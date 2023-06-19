@@ -4,6 +4,7 @@ const express = require('express')
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
+require('./config/mongoose')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -13,6 +14,15 @@ app.use(express.json())
 
 app.get('/', (req, res) => {
   res.send('<h1>Hello</h1>')
+})
+
+app.all('*', (req, res) => {
+  const errors = {
+    status: 404,
+    message: 'Route Not Found'
+  }
+
+  res.status(404).json({ errors })
 })
 
 app.listen(PORT, () => {
