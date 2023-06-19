@@ -1,27 +1,30 @@
 const bcrypt = require('bcryptjs')
 const { Schema, model } = require('mongoose')
 
-const userSchema = new Schema({
-  email: {
-    type: String,
-    lowercase: true,
-    unique: true,
-    required: true
+const userSchema = new Schema(
+  {
+    email: {
+      type: String,
+      lowercase: true,
+      unique: true,
+      required: true
+    },
+    username: {
+      type: String,
+      required: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    avatar: {
+      type: String,
+      default:
+        'https://res.cloudinary.com/dcgkzdjtr/image/upload/v1687157291/human_coding_og7byy.png'
+    }
   },
-  username: {
-    type: String,
-    required: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  avatar: {
-    type: String,
-    default:
-      'https://res.cloudinary.com/dcgkzdjtr/image/upload/v1687157291/human_coding_og7byy.png'
-  }
-})
+  { timestamps: true }
+)
 
 userSchema.pre('save', async function (next) {
   try {
