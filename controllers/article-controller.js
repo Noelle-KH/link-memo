@@ -1,6 +1,7 @@
 const createError = require('http-errors')
 
 const Article = require('../models/article-model')
+const Comment = require('../models/comment-model')
 const {
   generateShortenUrl,
   generateQRCode,
@@ -93,6 +94,39 @@ const articleController = {
       }
 
       res.json({ message: 'Delete article successfully' })
+    } catch (error) {
+      next(error)
+    }
+  },
+  getArticleComments: async (req, res, next) => {
+    try {
+      const articleId = req.params.id
+
+      const comments = await Comment.find({ articleId })
+        .select('-__v -updatedAt')
+        .lean()
+
+      res.json({ comments })
+    } catch (error) {
+      next(error)
+    }
+  },
+  addArticleComment: async (req, res, next) => {
+    try {
+      const userId = req.id
+      const articleId = req.params.id
+      const { content } = req.body
+      if (!content) throw createError.BadRequest('All fields are required')
+
+      const article = await Article.findById(articleId).lean()
+      if (!article) throw createError.NotFound('Article not found')
+
+      const comment = await Comment.create({ userId, articleId, content })
+
+      res.json({
+        message: 'Create comment successfully',
+        comment
+      })
     } catch (error) {
       next(error)
     }
