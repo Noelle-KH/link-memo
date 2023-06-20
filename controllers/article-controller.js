@@ -130,6 +130,24 @@ const articleController = {
     } catch (error) {
       next(error)
     }
+  },
+  goToOriginUrl: async (req, res, next) => {
+    try {
+      const { shortenUrl } = req.params
+
+      const article = await Article.findOne({
+        'urls.shortenUrl': shortenUrl
+      })
+        .select('urls.originUrl')
+        .lean()
+      if (!article) throw createError.NotFound('Url not found')
+
+      const { originUrl } = article.urls
+
+      res.redirect(originUrl)
+    } catch (error) {
+      next(error)
+    }
   }
 }
 
