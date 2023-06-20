@@ -1,7 +1,7 @@
 const createError = require('http-errors')
-const { isEmail, isAlphanumeric, isByteLength } = require('validator')
+const { isEmail, isAlphanumeric, isByteLength, isURL } = require('validator')
 
-const fieldValidation = (type = 'login') => {
+const authFieldValidation = (type = 'login') => {
   return (req, res, next) => {
     const { email, password } = req.body
 
@@ -37,4 +37,18 @@ const fieldValidation = (type = 'login') => {
   }
 }
 
-module.exports = { fieldValidation }
+const articleFieldValidation = (req, res, next) => {
+  const { title, originUrl } = req.body
+
+  if (!title || !originUrl) {
+    throw createError.BadRequest('All fields are required')
+  }
+
+  if (!isURL(originUrl, { require_protocol: true })) {
+    throw createError.BadRequest('Invalid URL')
+  }
+
+  next()
+}
+
+module.exports = { authFieldValidation, articleFieldValidation }
