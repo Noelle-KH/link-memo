@@ -8,6 +8,7 @@ const { verifyToken } = require('../middleware/auth')
 
 const users = require('./modules/users-route')
 const articles = require('./modules/articles-route')
+const comments = require('./modules/comments-route')
 
 router.post('/register', authFieldValidation('register'), authController.register)
 
@@ -17,6 +18,7 @@ router.get('/:shortenUrl', articleController.goToOriginUrl)
 
 router.use('/users', verifyToken, users)
 router.use('/articles', verifyToken, articles)
+router.use('/comments', verifyToken, comments)
 
 router.use('/', errorHandler)
 
