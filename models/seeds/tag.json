@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Frontend"
+  },
+  {
+    "name": "Backend"
+  },
+  {
+    "name": "FullStack"
+  },
+  {
+    "name": "JavaScript"
+  },
+  {
+    "name": "NodeJS"
+  },
+  {
+    "name": "React"
+  },
+  {
+    "name": "SQL"
+  },
+  {
+    "name": "NoSQL"
+  },
+  {
+    "name": "Deployment"
+  },
+  {
+    "name": "Docker"
+  }
+]
