@@ -9,16 +9,18 @@ const { verifyToken } = require('../middleware/auth')
 const users = require('./modules/users-route')
 const articles = require('./modules/articles-route')
 const comments = require('./modules/comments-route')
+const tags = require('./modules/tags-route')
 
 router.post('/register', authFieldValidation('register'), authController.register)
 
 router.post('/login', authFieldValidation(), authController.login)
 
-router.get('/:shortenUrl', articleController.goToOriginUrl)
-
 router.use('/users', verifyToken, users)
 router.use('/articles', verifyToken, articles)
+router.use('/tags', verifyToken, tags)
 router.use('/comments', verifyToken, comments)
+
+router.get('/:shortenUrl', articleController.goToOriginUrl)
 
 router.use('/', errorHandler)
 
