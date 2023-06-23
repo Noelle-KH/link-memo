@@ -19,7 +19,32 @@ const userController = {
       next(error)
     }
   },
-  updateUser: (req, res, next) => {},
+  updateUser: async (req, res, next) => {
+    try {
+      const { id } = req.params
+      const { file } = req
+      const { username, email, password } = req.body
+
+      const [user, foundEmail] = await Promise.all([
+        User.findById(id),
+        User.findOne({ email }).select('email').lean()
+      ])
+      if (foundEmail && user.email !== foundEmail.email) {
+        throw createError.BadRequest('Email already exists')
+      }
+
+      const avatar = file.path || user.avatar
+
+      Object.assign(user, { username, email, password, avatar })
+      await user.save()
+
+      res.json({
+        message: 'Update user successfully'
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
   getUserArticles: async (req, res, next) => {
     try {
       const { id } = req.params
