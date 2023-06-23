@@ -51,4 +51,28 @@ const articleFieldValidation = (req, res, next) => {
   next()
 }
 
-module.exports = { authFieldValidation, articleFieldValidation }
+const userFieldValidation = (req, res, next) => {
+  const { username, email, password } = req.body
+
+  if (!username || !email || !password) {
+    throw createError.BadRequest('All fields are required')
+  }
+
+  if (!isEmail(email)) {
+    throw createError.BadRequest('Invalid Email')
+  }
+
+  if (!isAlphanumeric(password) || !isByteLength(password, { min: 6 })) {
+    throw createError.BadRequest(
+      'Password length at least 6, contains only letters and numbers'
+    )
+  }
+
+  next()
+}
+
+module.exports = {
+  authFieldValidation,
+  articleFieldValidation,
+  userFieldValidation
+}

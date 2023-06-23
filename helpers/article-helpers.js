@@ -1,14 +1,9 @@
 const axios = require('axios')
-const { v4: uuid } = require('uuid')
 const crypto = require('crypto')
-const { v2: cloudinary } = require('cloudinary')
 const qrCode = require('qrcode')
+const { v4: uuid } = require('uuid')
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-})
+const cloudinary = require('../config/cloudinary')
 
 const generateShortenUrl = () => {
   const uniqueId = uuid()
@@ -47,6 +42,7 @@ const generateSummary = async (originUrl) => {
     }
 
     const response = await axios.request(options)
+
     return response.data.summary
   } catch (error) {
     throw new Error(error.message)

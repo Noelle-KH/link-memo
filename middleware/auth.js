@@ -15,6 +15,7 @@ const verifyToken = (req, res, next) => {
       }
 
       req.id = payload.id
+
       next()
     })
   } catch (error) {
@@ -22,4 +23,15 @@ const verifyToken = (req, res, next) => {
   }
 }
 
-module.exports = { verifyToken }
+const verifySelf = (req, res, next) => {
+  const loginId = req.id
+  const { id } = req.params
+
+  if (loginId !== id) {
+    throw createError.Forbidden('No operation permission')
+  }
+
+  next()
+}
+
+module.exports = { verifyToken, verifySelf }
