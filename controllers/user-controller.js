@@ -4,17 +4,32 @@ const Article = require('../models/article-model')
 const User = require('../models/user-model')
 const Comment = require('../models/comment-model')
 const Follow = require('../models/follow-model')
+const {
+  formatObject,
+  formatArray,
+  formatMessage
+} = require('../helpers/format-helpers')
 
 const userController = {
   getUser: async (req, res, next) => {
     try {
       const { id } = req.params
-      const user = await User.findById(id).select('-__v -updatedAt').lean()
+      const user = await User.findById(id)
+        .populate([
+          'articleCount',
+          'commentCount',
+          'followerCount',
+          'followingCount'
+        ])
+        .select('username email')
+        .lean()
       if (!user) {
-        throw createError.NotFound('User not found')
+        throw createError.NotFound('The user does not exist')
       }
 
-      res.json({ user })
+      const data = formatObject(user, 'users')
+
+      res.json({ data })
     } catch (error) {
       next(error)
     }
@@ -38,9 +53,9 @@ const userController = {
       Object.assign(user, { username, email, password, avatar })
       await user.save()
 
-      res.json({
-        message: 'Update user successfully'
-      })
+      const response = formatMessage('User updated successfully')
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -49,10 +64,16 @@ const userController = {
     try {
       const { id } = req.params
       const articles = await Article.find({ userId: id })
-        .select('-__v -updatedAt')
+        .populate('articleCommentCount')
+        .select('title summary record urls')
         .lean()
 
-      res.json({ articles })
+      const data = articles.length ? formatArray(articles, 'articles') : null
+      const response = !data
+        ? formatMessage('No data found for the article')
+        : { data }
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -61,24 +82,51 @@ const userController = {
     try {
       const { id } = req.params
       const comments = await Comment.find({ userId: id })
-        .select('-__v -updatedAt')
+        .select('content')
         .lean()
 
-      res.json({ comments })
+      const data = comments.length ? formatArray(comments, 'comments') : null
+      const response = !data
+        ? formatMessage('No data found for the comment')
+        : { data }
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
   },
-  getUserFollows: async (req, res, next) => {
+  getUserFollowers: async (req, res, next) => {
     try {
       const { id } = req.params
       const followShip = await Follow.find({
-        $or: [{ followerId: id }, { followingId: id }]
+        followingId: id
       })
-        .select('-__v')
+        .select('followerId')
         .lean()
 
-      res.json({ followShip })
+      const data = followShip.length ? formatArray(followShip, 'follows') : null
+      const response = !data
+        ? formatMessage('No data found for the follower')
+        : { data }
+
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  },
+  getUserFollowings: async (req, res, next) => {
+    try {
+      const { id } = req.params
+      const followShip = await Follow.find({ followerId: id })
+        .select('followingId')
+        .lean()
+
+      const data = followShip.length ? formatArray(followShip, 'follows') : null
+      const response = !data
+        ? formatMessage('No data found for the following')
+        : { data }
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -87,7 +135,7 @@ const userController = {
     try {
       const followerId = req.id
       const followingId = req.params.id
-      console.log(followerId === followingId)
+
       if (followerId === followingId) {
         throw createError.BadRequest('Cannot follow yourself')
       }
@@ -99,9 +147,11 @@ const userController = {
 
       await Follow.create({ followerId, followingId })
 
-      res.json({
-        message: 'Create new following relationship successfully'
-      })
+      const response = formatMessage(
+        'Following relationship created successfully'
+      )
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -122,9 +172,11 @@ const userController = {
         throw createError.BadRequest('You are not following this user')
       }
 
-      res.json({
-        message: 'Delete following relationship successfully'
-      })
+      const response = formatMessage(
+        'Following relationship deleted successfully'
+      )
+
+      res.json(response)
     } catch (error) {
       next(error)
     }

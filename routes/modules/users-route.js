@@ -5,7 +5,8 @@ const { verifySelf } = require('../../middleware/auth')
 const { userFieldValidation } = require('../../middleware/validation')
 const upload = require('../../middleware/multer')
 
-router.get('/:id/follows', userController.getUserFollows)
+router.get('/:id/followings', userController.getUserFollowings)
+router.get('/:id/followers', userController.getUserFollowers)
 router.post('/:id/follows', userController.postUserFollow)
 router.delete('/:id/follows', userController.deleteUserFollow)
 
