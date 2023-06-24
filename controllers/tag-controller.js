@@ -28,7 +28,9 @@ const tagController = {
     try {
       const { id } = req.params
       const tag = await Tag.findById(id).select('name').lean()
-      if (!tag) throw createError.NotFound('The tag does not exist')
+      if (!tag) {
+        throw createError.NotFound('The tag does not exist')
+      }
 
       const data = formatObject(tag, 'tags')
 
@@ -41,7 +43,9 @@ const tagController = {
     try {
       const userId = req.id
       const { name } = req.body
-      if (!name) throw createError.BadRequest('Tag name is required')
+      if (!name) {
+        throw createError.BadRequest('Tag name is required')
+      }
 
       const tagExist = await Tag.findOne({ name })
       if (tagExist) throw createError.BadRequest('Tag is already exist')
@@ -65,6 +69,10 @@ const tagController = {
       const userId = req.id
       const { id } = req.params
       const { name } = req.body
+      if (!name) {
+        throw createError.BadRequest('Tag name is required')
+      }
+
       const [tag, foundTag] = await Promise.all([
         Tag.findOne({ _id: id, userId }),
         Tag.findOne({ name }).select('name').lean()

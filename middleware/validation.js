@@ -6,15 +6,21 @@ const authFieldValidation = (type = 'login') => {
     const { email, password } = req.body
 
     if (type === 'register') {
-      const { username } = req.body
+      const { username, confirmPassword } = req.body
 
-      if (!username) {
+      if (!username || !confirmPassword) {
         throw createError.BadRequest('All fields are required')
       }
 
       if (!isAlphanumeric(username)) {
         throw createError.BadRequest(
           'Username contains only letters and numbers'
+        )
+      }
+
+      if (password !== confirmPassword) {
+        throw createError.BadRequest(
+          'Password and confirm password do not match'
         )
       }
     }
@@ -37,18 +43,29 @@ const authFieldValidation = (type = 'login') => {
   }
 }
 
-const articleFieldValidation = (req, res, next) => {
-  const { title, originUrl } = req.body
+const articleFieldValidation = (type = 'create') => {
+  return (req, res, next) => {
+    const { title, originUrl } = req.body
 
-  if (!title || !originUrl) {
-    throw createError.BadRequest('All fields are required')
+    if (type === 'update') {
+      const { summary, record, tagsId } = req.body
+      if (!title || !summary || !record || !tagsId.length) {
+        throw createError.BadRequest('All fields are required ')
+      }
+
+      return next()
+    }
+
+    if (!title || !originUrl) {
+      throw createError.BadRequest('All fields are required')
+    }
+
+    if (!isURL(originUrl, { require_protocol: true })) {
+      throw createError.BadRequest('Invalid URL')
+    }
+
+    next()
   }
-
-  if (!isURL(originUrl, { require_protocol: true })) {
-    throw createError.BadRequest('Invalid URL')
-  }
-
-  next()
 }
 
 const userFieldValidation = (req, res, next) => {

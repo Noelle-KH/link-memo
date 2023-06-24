@@ -8,7 +8,9 @@ const commentController = {
     try {
       const { id } = req.params
       const comment = await Comment.findById(id).select('content').lean()
-      if (!comment) throw createError.NotFound('The comment does not exist')
+      if (!comment) {
+        throw createError.NotFound('The comment does not exist')
+      }
 
       const data = formatObject(comment, 'comments')
 
@@ -22,6 +24,10 @@ const commentController = {
       const userId = req.id
       const { id } = req.params
       const { content } = req.body
+      if (!content) {
+        throw createError.BadRequest('Comment content is required')
+      }
+
       const updatedComment = await Comment.findOneAndUpdate(
         { _id: id, userId },
         { content }

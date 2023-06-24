@@ -39,7 +39,9 @@ const articleController = {
         .populate('articleCommentCount')
         .select('title summary record urls tagsId')
         .lean()
-      if (!article) throw createError.NotFound('The article does not exist')
+      if (!article) {
+        throw createError.NotFound('The article does not exist')
+      }
 
       const data = formatObject(article, 'articles')
 
@@ -89,9 +91,6 @@ const articleController = {
       const userId = req.id
       const { id } = req.params
       const { title, summary, record, tagsId } = req.body
-      if (!title || !summary || !record || !tagsId.length) {
-        throw createError.BadRequest('All fields are required ')
-      }
 
       const updatedArticle = await Article.findOneAndUpdate(
         { _id: id, userId },
@@ -153,7 +152,9 @@ const articleController = {
       }
 
       const article = await Article.findById(articleId).lean()
-      if (!article) throw createError.NotFound('The article does not exist')
+      if (!article) {
+        throw createError.NotFound('The article does not exist')
+      }
 
       const comment = await Comment.create({ userId, articleId, content })
 
@@ -179,7 +180,9 @@ const articleController = {
       })
         .select('urls.originUrl')
         .lean()
-      if (!article) throw createError.NotFound('The URL does not exist')
+      if (!article) {
+        throw createError.NotFound('The URL does not exist')
+      }
 
       const { originUrl } = article.urls
 
