@@ -1,13 +1,25 @@
 const createError = require('http-errors')
 
 const Tag = require('../models/tag-model')
+const {
+  formatObject,
+  formatArray,
+  formatMessage
+} = require('../helpers/format-helpers')
 
 const tagController = {
   getTags: async (req, res, next) => {
     try {
-      const tags = await Tag.find({}).select('-__v').lean()
+      const tags = await Tag.find({ userId: { $exists: false } })
+        .select('name')
+        .lean()
 
-      res.json({ tags })
+      const data = tags.length ? formatArray(tags, 'tags') : null
+      const response = !data
+        ? formatMessage('No data found for the tag')
+        : { data }
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -15,10 +27,12 @@ const tagController = {
   getTag: async (req, res, next) => {
     try {
       const { id } = req.params
-      const tag = await Tag.findById(id).select('-__v')
-      if (!tag) throw createError.NotFound('Tag not found')
+      const tag = await Tag.findById(id).select('name').lean()
+      if (!tag) throw createError.NotFound('The tag does not exist')
 
-      res.json({ tag })
+      const data = formatObject(tag, 'tags')
+
+      res.json({ data })
     } catch (error) {
       next(error)
     }
@@ -33,11 +47,15 @@ const tagController = {
       if (tagExist) throw createError.BadRequest('Tag is already exist')
 
       const tag = await Tag.create({ name, userId })
+      const data = {
+        id: tag._id,
+        type: 'tags',
+        attributes: {
+          name: tag.name
+        }
+      }
 
-      res.json({
-        message: 'Create tag successfully',
-        tag
-      })
+      res.json({ data })
     } catch (error) {
       next(error)
     }
@@ -47,12 +65,24 @@ const tagController = {
       const userId = req.id
       const { id } = req.params
       const { name } = req.body
-      const tag = await Tag.findOneAndUpdate({ _id: id, userId }, { name })
-      if (!tag) throw createError.NotFound('Tag not found')
+      const [tag, foundTag] = await Promise.all([
+        Tag.findOne({ _id: id, userId }),
+        Tag.findOne({ name }).select('name').lean()
+      ])
+      if (!tag) {
+        throw createError.BadRequest('The tag does not exist')
+      }
 
-      res.json({
-        message: 'Update tag successfully'
-      })
+      if (foundTag && tag.name !== foundTag.name) {
+        throw createError.BadRequest('Tag name already exists')
+      }
+
+      tag.name = name
+      await tag.save()
+
+      const response = formatMessage('Tag updated successfully')
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -62,11 +92,13 @@ const tagController = {
       const userId = req.id
       const { id } = req.params
       const tag = await Tag.findOneAndDelete({ _id: id, userId })
-      if (!tag) throw createError.NotFound('Tag not found')
+      if (!tag) {
+        throw createError.NotFound('The tag does not exist')
+      }
 
-      res.json({
-        message: 'Delete tag successfully'
-      })
+      const response = formatMessage('Tag deleted successfully')
+
+      res.json(response)
     } catch (error) {
       next(error)
     }

@@ -1,15 +1,18 @@
 const createError = require('http-errors')
+
 const Comment = require('../models/comment-model')
+const { formatObject, formatMessage } = require('../helpers/format-helpers')
 
 const commentController = {
   getComment: async (req, res, next) => {
     try {
       const { id } = req.params
-      const comment = await Comment.findById(id)
-        .select('-__v -updatedAt')
-        .lean()
+      const comment = await Comment.findById(id).select('content').lean()
+      if (!comment) throw createError.NotFound('The comment does not exist')
 
-      res.json({ comment })
+      const data = formatObject(comment, 'comments')
+
+      res.json({ data })
     } catch (error) {
       next(error)
     }
@@ -23,11 +26,13 @@ const commentController = {
         { _id: id, userId },
         { content }
       )
-      if (!updatedComment) throw createError.NotFound('Comment not found')
+      if (!updatedComment) {
+        throw createError.NotFound('The comment does not exist')
+      }
 
-      res.json({
-        message: 'Update comment successfully'
-      })
+      const response = formatMessage('Comment updated successfully')
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -38,11 +43,13 @@ const commentController = {
       const { id } = req.params
 
       const deletedComment = await Comment.findOneAndDelete({ _id: id, userId })
-      if (!deletedComment) throw createError.NotFound('Comment not found')
+      if (!deletedComment) {
+        throw createError.NotFound('The comment does not exist')
+      }
 
-      res.json({
-        message: 'Delete comment successfully'
-      })
+      const response = formatMessage('Comment deleted successfully')
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
