@@ -62,4 +62,11 @@ articleSchema.pre('save', async function (next) {
   next()
 })
 
+articleSchema.virtual('articleCommentCount', {
+  ref: 'Comment',
+  localField: '_id',
+  foreignField: 'articleId',
+  count: true
+})
+
 module.exports = model('Article', articleSchema)

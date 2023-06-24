@@ -37,4 +37,32 @@ userSchema.pre('save', async function (next) {
   }
 })
 
+userSchema.virtual('articleCount', {
+  ref: 'Article',
+  localField: '_id',
+  foreignField: 'userId',
+  count: true
+})
+
+userSchema.virtual('commentCount', {
+  ref: 'Comment',
+  localField: '_id',
+  foreignField: 'userId',
+  count: true
+})
+
+userSchema.virtual('followerCount', {
+  ref: 'Follow',
+  localField: '_id',
+  foreignField: 'followerId',
+  count: true
+})
+
+userSchema.virtual('followingCount', {
+  ref: 'Follow',
+  localField: '_id',
+  foreignField: 'followingId',
+  count: true
+})
+
 module.exports = model('User', userSchema)
