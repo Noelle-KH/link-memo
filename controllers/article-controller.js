@@ -7,13 +7,26 @@ const {
   generateQRCode,
   generateSummary
 } = require('../helpers/article-helpers')
+const {
+  formatObject,
+  formatArray,
+  formatMessage
+} = require('../helpers/format-helpers')
 
 const articleController = {
   getArticles: async (req, res, next) => {
     try {
-      const articles = await Article.find({}).select('-__v -updatedAt').lean()
+      const articles = await Article.find({})
+        .populate('articleCommentCount')
+        .select('title summary record urls tagsId')
+        .lean()
 
-      res.json({ articles })
+      const data = articles.length ? formatArray(articles, 'articles') : null
+      const response = !data
+        ? formatMessage('No data found for the article')
+        : { data }
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -23,11 +36,14 @@ const articleController = {
       const { id } = req.params
 
       const article = await Article.findById(id)
-        .select('-__v -updatedAt')
+        .populate('articleCommentCount')
+        .select('title summary record urls tagsId')
         .lean()
-      if (!article) throw createError.NotFound('Article not found')
+      if (!article) throw createError.NotFound('The article does not exist')
 
-      res.json({ article })
+      const data = formatObject(article, 'articles')
+
+      res.json({ data })
     } catch (error) {
       next(error)
     }
@@ -53,10 +69,17 @@ const articleController = {
       })
       const savedArticle = await article.save()
 
-      res.json({
-        message: 'Create article successfully',
-        article: savedArticle
-      })
+      const data = {
+        id: savedArticle._id,
+        type: 'articles',
+        attributes: {
+          title: savedArticle.title,
+          summary: savedArticle.summary,
+          urls: savedArticle.urls
+        }
+      }
+
+      res.json({ data })
     } catch (error) {
       next(error)
     }
@@ -66,8 +89,8 @@ const articleController = {
       const userId = req.id
       const { id } = req.params
       const { title, summary, record, tagsId } = req.body
-      if (!title || !summary) {
-        throw createError.BadRequest('Title and summary are required')
+      if (!title || !summary || !record || !tagsId.length) {
+        throw createError.BadRequest('All fields are required ')
       }
 
       const updatedArticle = await Article.findOneAndUpdate(
@@ -75,10 +98,12 @@ const articleController = {
         { title, summary, record, tagsId }
       )
       if (!updatedArticle) {
-        throw createError.NotFound('Article not found')
+        throw createError.NotFound('The article does not exist')
       }
 
-      res.json({ message: 'Update article successfully' })
+      const response = formatMessage('Article updated successfully')
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -90,10 +115,12 @@ const articleController = {
 
       const deleteArticle = await Article.findOneAndDelete({ _id: id, userId })
       if (!deleteArticle) {
-        throw createError.NotFound('Article not found')
+        throw createError.NotFound('The article does not exist')
       }
 
-      res.json({ message: 'Delete article successfully' })
+      const response = formatMessage('Article deleted successfully')
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -103,10 +130,15 @@ const articleController = {
       const articleId = req.params.id
 
       const comments = await Comment.find({ articleId })
-        .select('-__v -updatedAt')
+        .select('content')
         .lean()
 
-      res.json({ comments })
+      const data = comments.length ? formatArray(comments, 'comments') : null
+      const response = !data
+        ? formatMessage('No data found for the comment')
+        : { data }
+
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -116,17 +148,24 @@ const articleController = {
       const userId = req.id
       const articleId = req.params.id
       const { content } = req.body
-      if (!content) throw createError.BadRequest('All fields are required')
+      if (!content) {
+        throw createError.BadRequest('All fields are required')
+      }
 
       const article = await Article.findById(articleId).lean()
-      if (!article) throw createError.NotFound('Article not found')
+      if (!article) throw createError.NotFound('The article does not exist')
 
       const comment = await Comment.create({ userId, articleId, content })
 
-      res.json({
-        message: 'Create comment successfully',
-        comment
-      })
+      const data = {
+        id: comment.id,
+        type: 'comments',
+        attributes: {
+          content: comment.content
+        }
+      }
+
+      res.json({ data })
     } catch (error) {
       next(error)
     }
@@ -140,7 +179,7 @@ const articleController = {
       })
         .select('urls.originUrl')
         .lean()
-      if (!article) throw createError.NotFound('Url not found')
+      if (!article) throw createError.NotFound('The URL does not exist')
 
       const { originUrl } = article.urls
 

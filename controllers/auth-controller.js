@@ -9,13 +9,21 @@ const authController = {
     try {
       const { username, email, password } = req.body
 
-      const emailExist = await User.findOne({ email })
-      if (emailExist) throw createError.BadRequest('Email already exists.')
+      const emailExist = await User.findOne({ email }).lean()
+      if (emailExist) throw createError.BadRequest('Email already exists')
 
       const user = new User({ username, email, password })
       const savedUser = await user.save()
 
-      const data = { message: 'Registered successfully', id: savedUser._id }
+      const data = {
+        id: savedUser._id,
+        type: 'users',
+        attributes: {
+          username: savedUser.username,
+          email: savedUser.email
+        }
+      }
+
       res.status(201).json({ data })
     } catch (error) {
       next(error)
@@ -25,16 +33,24 @@ const authController = {
     try {
       const { email, password } = req.body
 
-      const user = await User.findOne({ email })
-      if (!user) throw createError.BadRequest("User doesn't exist")
+      const user = await User.findOne({ email }).lean()
+      if (!user) throw createError.NotFound('The user does not exist')
 
       const isMatch = await bcrypt.compare(password, user.password)
-      if (!isMatch) throw createError.BadRequest('Incorrect email or password')
+      if (!isMatch) throw createError.BadRequest('Invalid email or password')
 
       const token = jwt.sign({ id: user._id }, process.env.SECRET, {
         expiresIn: '1h'
       })
-      const data = { message: 'Login successfully', id: user._id, token }
+
+      const data = {
+        id: user._id,
+        type: 'users',
+        attributes: {
+          token
+        }
+      }
+
       res.json({ data })
     } catch (error) {
       next(error)
