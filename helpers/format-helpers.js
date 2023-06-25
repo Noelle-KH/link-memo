@@ -26,10 +26,10 @@ const formatArray = (data, type) => {
 
 const formatMessage = (message) => {
   return {
-    data: null,
     meta: {
       message
-    }
+    },
+    data: null
   }
 }
 

@@ -73,7 +73,7 @@ const tagController = {
         throw createError.BadRequest('Tag name is required')
       }
 
-      const [tag, foundTag] = await Promise.all([
+      const [tag, tagExist] = await Promise.all([
         Tag.findOne({ _id: id, userId }),
         Tag.findOne({ name }).select('name').lean()
       ])
@@ -81,7 +81,7 @@ const tagController = {
         throw createError.BadRequest('The tag does not exist')
       }
 
-      if (foundTag && tag.name !== foundTag.name) {
+      if (tagExist && tag.name !== tagExist.name) {
         throw createError.BadRequest('Tag name already exists')
       }
 

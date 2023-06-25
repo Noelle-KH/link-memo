@@ -12,19 +12,27 @@ const {
   formatArray,
   formatMessage
 } = require('../helpers/format-helpers')
+const { getPagination } = require('../helpers/pagination-helper')
 
 const articleController = {
   getArticles: async (req, res, next) => {
     try {
+      const { page } = req.query
+      const { limit, skip, currPage } = getPagination(page)
+
       const articles = await Article.find({})
-        .populate('articleCommentCount')
+        .populate(['articleCommentCount', 'articleBookmarkCount'])
         .select('title summary record urls tagsId')
+        .limit(limit)
+        .skip(skip)
+        .sort('-createdAt')
         .lean()
 
+      const meta = { page: currPage, limit, skip, total: articles.length }
       const data = articles.length ? formatArray(articles, 'articles') : null
       const response = !data
         ? formatMessage('No data found for the article')
-        : { data }
+        : Object.assign({ meta }, { data })
 
       res.json(response)
     } catch (error) {
@@ -54,6 +62,8 @@ const articleController = {
     try {
       const userId = req.id
       const { title, originUrl } = req.body
+      const record = req.body.record || ''
+      const tagsId = req.body.tagsId || []
 
       const shortenUrl = generateShortenUrl()
       const qrCode = await generateQRCode(originUrl)
@@ -67,6 +77,8 @@ const articleController = {
           qrCode
         },
         summary,
+        record,
+        tagsId,
         userId
       })
       const savedArticle = await article.save()
@@ -77,7 +89,9 @@ const articleController = {
         attributes: {
           title: savedArticle.title,
           summary: savedArticle.summary,
-          urls: savedArticle.urls
+          urls: savedArticle.urls,
+          record: savedArticle.record,
+          tagsId: savedArticle.tagsId
         }
       }
 
