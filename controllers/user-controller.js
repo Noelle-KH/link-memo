@@ -4,6 +4,7 @@ const Article = require('../models/article-model')
 const User = require('../models/user-model')
 const Comment = require('../models/comment-model')
 const Follow = require('../models/follow-model')
+const Bookmark = require('../models/bookmark-model')
 const {
   formatObject,
   formatArray,
@@ -19,7 +20,8 @@ const userController = {
           'articleCount',
           'commentCount',
           'followerCount',
-          'followingCount'
+          'followingCount',
+          'bookmarkCount'
         ])
         .select('username email')
         .lean()
@@ -40,11 +42,11 @@ const userController = {
       const { file } = req
       const { username, email, password } = req.body
 
-      const [user, foundEmail] = await Promise.all([
+      const [user, emailExist] = await Promise.all([
         User.findById(id),
         User.findOne({ email }).select('email').lean()
       ])
-      if (foundEmail && user.email !== foundEmail.email) {
+      if (emailExist && user.email !== emailExist.email) {
         throw createError.BadRequest('Email already exists')
       }
 
@@ -88,6 +90,38 @@ const userController = {
       const data = comments.length ? formatArray(comments, 'comments') : null
       const response = !data
         ? formatMessage('No data found for the comment')
+        : { data }
+
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  },
+  getUserBookmark: async (req, res, next) => {
+    try {
+      const userId = req.id
+      const bookmarks = await Bookmark.find({ userId })
+        .select('articleId')
+        .populate({
+          path: 'articleId',
+          select: 'title'
+        })
+        .lean()
+
+      const data = bookmarks.length
+        ? bookmarks.map((bookmark) => ({
+          id: bookmark._id,
+          type: 'bookmarks',
+          attributes: {
+            article: {
+              id: bookmark.articleId._id,
+              title: bookmark.articleId.title
+            }
+          }
+        }))
+        : null
+      const response = !data
+        ? formatMessage('No data found for the bookmark')
         : { data }
 
       res.json(response)

@@ -65,4 +65,11 @@ userSchema.virtual('followingCount', {
   count: true
 })
 
+userSchema.virtual('bookmarkCount', {
+  ref: 'Bookmark',
+  localField: '_id',
+  foreignField: 'userId',
+  count: true
+})
+
 module.exports = model('User', userSchema)

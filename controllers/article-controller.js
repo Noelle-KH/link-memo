@@ -2,6 +2,7 @@ const createError = require('http-errors')
 
 const Article = require('../models/article-model')
 const Comment = require('../models/comment-model')
+const Bookmark = require('../models/bookmark-model')
 const {
   generateShortenUrl,
   generateQRCode,
@@ -181,6 +182,44 @@ const articleController = {
       }
 
       res.json({ data })
+    } catch (error) {
+      next(error)
+    }
+  },
+  postArticleBookmark: async (req, res, next) => {
+    try {
+      const userId = req.id
+      const articleId = req.params.id
+
+      const bookmarkExist = await Bookmark.findOne({ userId, articleId })
+      if (bookmarkExist) {
+        throw createError.BadRequest('You are already bookmark this article')
+      }
+
+      await Bookmark.create({ userId, articleId })
+
+      const response = formatMessage('Bookmark updated successfully')
+
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  },
+  deleteArticleBookmark: async (req, res, next) => {
+    try {
+      const userId = req.id
+      const articleId = req.params.id
+
+      const bookmarkExist = await Bookmark.findOne({ userId, articleId })
+      if (!bookmarkExist) {
+        throw createError.BadRequest('You are not bookmark this article')
+      }
+
+      await Bookmark.deleteOne({ userId, articleId })
+
+      const response = formatMessage('Bookmark deleted successfully')
+
+      res.json(response)
     } catch (error) {
       next(error)
     }

@@ -69,4 +69,11 @@ articleSchema.virtual('articleCommentCount', {
   count: true
 })
 
+articleSchema.virtual('articleBookmarkCount', {
+  ref: 'Bookmark',
+  localField: '_id',
+  foreignField: 'articleId',
+  count: true
+})
+
 module.exports = model('Article', articleSchema)

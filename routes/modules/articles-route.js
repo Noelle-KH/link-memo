@@ -3,6 +3,9 @@ const router = require('express').Router()
 const articleController = require('../../controllers/article-controller')
 const { articleFieldValidation } = require('../../middleware/validation')
 
+router.post('/:id/bookmark', articleController.postArticleBookmark)
+router.delete('/:id/bookmark', articleController.deleteArticleBookmark)
+
 router.get('/:id/comment', articleController.getArticleComments)
 router.post('/:id/comment', articleController.addArticleComment)
 
