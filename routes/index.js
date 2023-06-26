@@ -15,6 +15,8 @@ router.post('/register', authFieldValidation('register'), authController.registe
 
 router.post('/login', authFieldValidation(), authController.login)
 
+router.post('/reset-password', authController.confirmEmail)
+
 router.use('/users', verifyToken, users)
 router.use('/articles', verifyToken, articles)
 router.use('/tags', verifyToken, tags)

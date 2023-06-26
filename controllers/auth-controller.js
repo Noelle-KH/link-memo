@@ -3,6 +3,7 @@ const createError = require('http-errors')
 const jwt = require('jsonwebtoken')
 
 const User = require('../models/user-model')
+const sendEmail = require('../config/sendinblue')
 
 const authController = {
   register: async (req, res, next) => {
@@ -52,6 +53,35 @@ const authController = {
       }
 
       res.json({ data })
+    } catch (error) {
+      next(error)
+    }
+  },
+  confirmEmail: async (req, res, next) => {
+    try {
+      const { email } = req.body
+      if (!email) {
+        throw createError.BadRequest('Email is required')
+      }
+
+      const userExist = await User.findOne({ email }).select('email').lean()
+      if (!userExist) {
+        throw createError.BadRequest('The user does not exist')
+      }
+
+      const token = jwt.sign({ email }, process.env.RESET_SECRET, {
+        expiresIn: '10m'
+      })
+      const url = `${req.protocol}://${req.get('host')}${req.url}/${token}`
+
+      await sendEmail(email, url)
+
+      res.json({
+        meta: {
+          message: 'Password reset email sent successfully'
+        },
+        data: null
+      })
     } catch (error) {
       next(error)
     }
