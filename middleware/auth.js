@@ -23,6 +23,23 @@ const verifyToken = (req, res, next) => {
   }
 }
 
+const verifyResetToken = (req, res, next) => {
+  try {
+    const { token } = req.params
+    jwt.verify(token, process.env.RESET_SECRET, (error, payload) => {
+      if (error) {
+        throw createError.Unauthorized('Invalid token')
+      }
+
+      req.email = payload.email
+
+      next()
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const verifySelf = (req, res, next) => {
   const loginId = req.id
   const { id } = req.params
@@ -34,4 +51,8 @@ const verifySelf = (req, res, next) => {
   next()
 }
 
-module.exports = { verifyToken, verifySelf }
+module.exports = {
+  verifyToken,
+  verifyResetToken,
+  verifySelf
+}

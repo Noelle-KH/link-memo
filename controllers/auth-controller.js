@@ -85,6 +85,31 @@ const authController = {
     } catch (error) {
       next(error)
     }
+  },
+  resetPassword: async (req, res, next) => {
+    try {
+      const { email } = req
+      const { password, confirmPassword } = req.body
+      if (password !== confirmPassword) {
+        throw createError.BadRequest(
+          'Password and confirm password do not match'
+        )
+      }
+
+      const user = await User.findOne({ email })
+      user.password = password
+
+      await user.save()
+
+      res.json({
+        meta: {
+          message: 'Password reset successful, please login again'
+        },
+        data: null
+      })
+    } catch (error) {
+      next(error)
+    }
   }
 }
 
