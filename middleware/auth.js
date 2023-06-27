@@ -31,7 +31,7 @@ const verifyResetToken = (req, res, next) => {
         throw createError.Unauthorized('Invalid token')
       }
 
-      req.email = payload.email
+      req.id = payload.id
 
       next()
     })

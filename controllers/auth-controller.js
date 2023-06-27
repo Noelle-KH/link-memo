@@ -3,7 +3,7 @@ const createError = require('http-errors')
 const jwt = require('jsonwebtoken')
 
 const User = require('../models/user-model')
-const sendEmail = require('../config/sendinblue')
+const sendEmail = require('../helpers/sendemail-helpers')
 
 const authController = {
   register: async (req, res, next) => {
@@ -11,7 +11,9 @@ const authController = {
       const { username, email, password } = req.body
 
       const emailExist = await User.findOne({ email }).lean()
-      if (emailExist) throw createError.BadRequest('Email already exists')
+      if (emailExist) {
+        throw createError.BadRequest('Email already exists')
+      }
 
       const user = new User({ username, email, password })
       const savedUser = await user.save()
@@ -35,10 +37,14 @@ const authController = {
       const { email, password } = req.body
 
       const user = await User.findOne({ email }).lean()
-      if (!user) throw createError.NotFound('The user does not exist')
+      if (!user) {
+        throw createError.NotFound('The user does not exist')
+      }
 
       const isMatch = await bcrypt.compare(password, user.password)
-      if (!isMatch) throw createError.BadRequest('Invalid email or password')
+      if (!isMatch) {
+        throw createError.BadRequest('Invalid email or password')
+      }
 
       const token = jwt.sign({ id: user._id }, process.env.SECRET, {
         expiresIn: '1h'
@@ -60,27 +66,25 @@ const authController = {
   confirmEmail: async (req, res, next) => {
     try {
       const { email } = req.body
-      if (!email) {
-        throw createError.BadRequest('Email is required')
-      }
-
       const userExist = await User.findOne({ email }).select('email').lean()
       if (!userExist) {
         throw createError.BadRequest('The user does not exist')
       }
 
-      const token = jwt.sign({ email }, process.env.RESET_SECRET, {
+      const token = jwt.sign({ id: userExist._id }, process.env.RESET_SECRET, {
         expiresIn: '10m'
       })
-      const url = `${req.protocol}://${req.get('host')}${req.url}/${token}`
+      const url = `${req.protocol}://${req.get('host')}${req.originalUrl}/${token}`
 
-      await sendEmail(email, url)
+      const info = await sendEmail(email, url)
 
       res.json({
         meta: {
           message: 'Password reset email sent successfully'
         },
-        data: null
+        data: {
+          info
+        }
       })
     } catch (error) {
       next(error)
@@ -88,17 +92,14 @@ const authController = {
   },
   resetPassword: async (req, res, next) => {
     try {
-      const { email } = req
-      const { password, confirmPassword } = req.body
-      if (password !== confirmPassword) {
-        throw createError.BadRequest(
-          'Password and confirm password do not match'
-        )
+      const { id } = req
+      const { password } = req.body
+      const user = await User.findById(id)
+      if (!user) {
+        throw createError.BadRequest('The user does not exist')
       }
 
-      const user = await User.findOne({ email })
       user.password = password
-
       await user.save()
 
       res.json({
