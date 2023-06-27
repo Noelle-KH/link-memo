@@ -10,10 +10,14 @@ router.get('/:id/comment', articleController.getArticleComments)
 router.post('/:id/comment', articleController.addArticleComment)
 
 router.get('/:id', articleController.getArticle)
-router.put('/:id', articleFieldValidation('update'), articleController.updateArticle)
+router.put(
+  '/:id',
+  articleFieldValidation('update'),
+  articleController.updateArticle
+)
 router.delete('/:id', articleController.deleteArticle)
 
 router.get('/', articleController.getArticles)
-router.post('/', articleFieldValidation(), articleController.addArticle)
+router.post('/', articleFieldValidation('create'), articleController.addArticle)
 
 module.exports = router

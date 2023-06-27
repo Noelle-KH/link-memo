@@ -3,7 +3,10 @@ const router = require('express').Router()
 const authController = require('../controllers/auth-controller')
 const articleController = require('../controllers/article-controller')
 const errorHandler = require('../middleware/error-handler')
-const { authFieldValidation } = require('../middleware/validation')
+const {
+  userFieldValidation,
+  passwordFieldValidation
+} = require('../middleware/validation')
 const { verifyToken, verifyResetToken } = require('../middleware/auth')
 
 const users = require('./modules/users-route')
@@ -11,12 +14,32 @@ const articles = require('./modules/articles-route')
 const comments = require('./modules/comments-route')
 const tags = require('./modules/tags-route')
 
-router.post('/register', authFieldValidation('register'), authController.register)
+router.post(
+  '/register',
+  userFieldValidation('register'),
+  passwordFieldValidation('register'),
+  authController.register
+)
 
-router.post('/login', authFieldValidation(), authController.login)
+router.post(
+  '/login',
+  userFieldValidation('login'),
+  passwordFieldValidation('login'),
+  authController.login
+)
 
-router.post('/reset-password', authController.confirmEmail)
-router.post('/reset-password/:token', verifyResetToken, authController.resetPassword)
+router.post(
+  '/reset-password',
+  userFieldValidation('reset'),
+  authController.confirmEmail
+)
+
+router.post(
+  '/reset-password/:token',
+  verifyResetToken,
+  passwordFieldValidation('reset'),
+  authController.resetPassword
+)
 
 router.use('/users', verifyToken, users)
 router.use('/articles', verifyToken, articles)

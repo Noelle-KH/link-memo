@@ -62,6 +62,7 @@ const userController = {
       next(error)
     }
   },
+  disableUser: async (req, res, next) => {},
   getUserArticles: async (req, res, next) => {
     try {
       const { id } = req.params

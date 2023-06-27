@@ -1,14 +1,19 @@
 const createError = require('http-errors')
 const { isEmail, isAlphanumeric, isByteLength, isURL } = require('validator')
 
-const authFieldValidation = (type = 'login') => {
+const userFieldValidation = (type = 'login') => {
   return (req, res, next) => {
-    const { email, password } = req.body
+    const { username, email } = req.body
+    if (!email) {
+      throw createError.BadRequest('All fields are required')
+    }
 
-    if (type === 'register') {
-      const { username, confirmPassword } = req.body
+    if (!isEmail(email)) {
+      throw createError.BadRequest('Invalid Email')
+    }
 
-      if (!username || !confirmPassword) {
+    if (type !== 'login' && type !== 'reset') {
+      if (!username) {
         throw createError.BadRequest('All fields are required')
       }
 
@@ -17,26 +22,36 @@ const authFieldValidation = (type = 'login') => {
           'Username contains only letters and numbers'
         )
       }
-
-      if (password !== confirmPassword) {
-        throw createError.BadRequest(
-          'Password and confirm password do not match'
-        )
-      }
     }
 
-    if (!email || !password) {
+    next()
+  }
+}
+
+const passwordFieldValidation = (type = 'login') => {
+  return (req, res, next) => {
+    const { password, confirmPassword } = req.body
+
+    if (!password) {
       throw createError.BadRequest('All fields are required')
-    }
-
-    if (!isEmail(email)) {
-      throw createError.BadRequest('Invalid Email')
     }
 
     if (!isAlphanumeric(password) || !isByteLength(password, { min: 6 })) {
       throw createError.BadRequest(
         'Password length at least 6, contains only letters and numbers'
       )
+    }
+
+    if (type !== 'login') {
+      if (!confirmPassword) {
+        throw createError.BadRequest('All fields are required')
+      }
+
+      if (password !== confirmPassword) {
+        throw createError.BadRequest(
+          'Password and confirm password do not match'
+        )
+      }
     }
 
     next()
@@ -68,28 +83,8 @@ const articleFieldValidation = (type = 'create') => {
   }
 }
 
-const userFieldValidation = (req, res, next) => {
-  const { username, email, password } = req.body
-
-  if (!username || !email || !password) {
-    throw createError.BadRequest('All fields are required')
-  }
-
-  if (!isEmail(email)) {
-    throw createError.BadRequest('Invalid Email')
-  }
-
-  if (!isAlphanumeric(password) || !isByteLength(password, { min: 6 })) {
-    throw createError.BadRequest(
-      'Password length at least 6, contains only letters and numbers'
-    )
-  }
-
-  next()
-}
-
 module.exports = {
-  authFieldValidation,
+  userFieldValidation,
   articleFieldValidation,
-  userFieldValidation
+  passwordFieldValidation
 }
