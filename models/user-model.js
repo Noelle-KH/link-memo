@@ -21,6 +21,10 @@ const userSchema = new Schema(
       type: String,
       default:
         'https://res.cloudinary.com/dcgkzdjtr/image/upload/v1687157291/human_coding_og7byy.png'
+    },
+    deletedAt: {
+      type: Date,
+      default: null
     }
   },
   { timestamps: true }
@@ -28,6 +32,10 @@ const userSchema = new Schema(
 
 userSchema.pre('save', async function (next) {
   try {
+    if (!this.isModified('password')) {
+      return next()
+    }
+
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(this.password, salt)
     this.password = hashedPassword

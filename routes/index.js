@@ -8,11 +8,14 @@ const {
   passwordFieldValidation
 } = require('../middleware/validation')
 const { verifyToken, verifyResetToken } = require('../middleware/auth')
+const checkUserStatus = require('../middleware/check-status')
 
 const users = require('./modules/users-route')
 const articles = require('./modules/articles-route')
 const comments = require('./modules/comments-route')
 const tags = require('./modules/tags-route')
+
+router.use(checkUserStatus)
 
 router.post(
   '/register',

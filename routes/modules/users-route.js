@@ -30,5 +30,6 @@ router.put(
   passwordFieldValidation('update'),
   userController.updateUser
 )
+router.patch('/:id', verifySelf, userController.changeUserStatus)
 
 module.exports = router

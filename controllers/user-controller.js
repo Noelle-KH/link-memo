@@ -62,7 +62,24 @@ const userController = {
       next(error)
     }
   },
-  disableUser: async (req, res, next) => {},
+  changeUserStatus: async (req, res, next) => {
+    try {
+      const { id } = req.params
+      const deadline = 30 * 24 * 60 * 60 * 1000
+      const user = await User.findById(id)
+
+      user.deletedAt =
+        user.deletedAt === null ? new Date(Date.now() + deadline) : null
+
+      await user.save()
+
+      const response = formatMessage('User status updated successfully')
+
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  },
   getUserArticles: async (req, res, next) => {
     try {
       const { id } = req.params
