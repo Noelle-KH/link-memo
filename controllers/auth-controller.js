@@ -40,6 +40,11 @@ const authController = {
       if (!user) {
         throw createError.NotFound('The user does not exist')
       }
+      if (user.deletedAt !== null) {
+        throw createError.BadRequest(
+          'This user is currently deactivated. To regain access, please apply for account reactivation'
+        )
+      }
 
       const isMatch = await bcrypt.compare(password, user.password)
       if (!isMatch) {

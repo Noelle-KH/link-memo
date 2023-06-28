@@ -1,6 +1,7 @@
 const router = require('express').Router()
 
 const authController = require('../controllers/auth-controller')
+const userController = require('../controllers/user-controller')
 const articleController = require('../controllers/article-controller')
 const errorHandler = require('../middleware/error-handler')
 const {
@@ -8,7 +9,7 @@ const {
   passwordFieldValidation
 } = require('../middleware/validation')
 const { verifyToken, verifyResetToken } = require('../middleware/auth')
-const checkUserStatus = require('../middleware/check-status')
+const { checkUserStatus } = require('../middleware/check-user')
 
 const users = require('./modules/users-route')
 const articles = require('./modules/articles-route')
@@ -43,6 +44,8 @@ router.post(
   passwordFieldValidation('reset'),
   authController.resetPassword
 )
+
+router.patch('/change-status', userController.changeUserStatus)
 
 router.use('/users', verifyToken, users)
 router.use('/articles', verifyToken, articles)

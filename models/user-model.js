@@ -45,6 +45,32 @@ userSchema.pre('save', async function (next) {
   }
 })
 
+userSchema.pre('deleteMany', async function (next) {
+  try {
+    const deletedUsers = await this.model.find(this.getFilter())
+
+    if (deletedUsers.length) {
+      const deleteDocument = deletedUsers.map((user) => {
+        const userId = user._id
+
+        return Promise.all([
+          this.model('Article').deleteMany(userId),
+          this.model('Comment').deleteMany(userId),
+          this.model('Tag').deleteMany(userId),
+          this.model('Follow').deleteMany(userId),
+          this.model('Bookmark').deleteMany(userId)
+        ])
+      })
+
+      await Promise.all(deleteDocument)
+
+      next()
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
 userSchema.virtual('articleCount', {
   ref: 'Article',
   localField: '_id',

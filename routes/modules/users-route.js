@@ -1,12 +1,14 @@
 const router = require('express').Router()
 
 const userController = require('../../controllers/user-controller')
-const { verifySelf } = require('../../middleware/auth')
 const {
   userFieldValidation,
   passwordFieldValidation
 } = require('../../middleware/validation')
 const upload = require('../../middleware/multer')
+const { checkUserExist } = require('../../middleware/check-user')
+
+router.use('/:id', checkUserExist)
 
 router.get('/:id/bookmarks', userController.getUserBookmark)
 
@@ -23,13 +25,12 @@ router.get('/:id/comments', userController.getUserComments)
 
 router.get('/:id', userController.getUser)
 router.put(
-  '/:id',
-  verifySelf,
+  '/',
   upload.single('avatar'),
   userFieldValidation('update'),
   passwordFieldValidation('update'),
   userController.updateUser
 )
-router.patch('/:id', verifySelf, userController.changeUserStatus)
+router.patch('/', userController.changeUserStatus)
 
 module.exports = router
