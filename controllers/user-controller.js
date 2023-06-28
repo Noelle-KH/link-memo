@@ -38,8 +38,7 @@ const userController = {
   },
   updateUser: async (req, res, next) => {
     try {
-      const { id } = req.params
-      const { file } = req
+      const { id, file } = req
       const { username, email, password } = req.body
 
       const [user, emailExist] = await Promise.all([
@@ -64,9 +63,13 @@ const userController = {
   },
   changeUserStatus: async (req, res, next) => {
     try {
-      const { id } = req.params
+      const { id } = req
+      const { email } = req.body
       const deadline = 30 * 24 * 60 * 60 * 1000
-      const user = await User.findById(id)
+      const user = await User.findOne(id ? { _id: id } : { email })
+      if (!user) {
+        throw createError.NotFound('The user does not exist')
+      }
 
       user.deletedAt =
         user.deletedAt === null ? new Date(Date.now() + deadline) : null
@@ -84,7 +87,7 @@ const userController = {
     try {
       const { id } = req.params
       const articles = await Article.find({ userId: id })
-        .populate('articleCommentCount')
+        .populate(['articleCommentCount', 'articleBookmarkCount'])
         .select('title summary record urls')
         .lean()
 
@@ -117,27 +120,9 @@ const userController = {
   },
   getUserBookmark: async (req, res, next) => {
     try {
-      const userId = req.id
-      const bookmarks = await Bookmark.find({ userId })
-        .select('articleId')
-        .populate({
-          path: 'articleId',
-          select: 'title'
-        })
-        .lean()
-
-      const data = bookmarks.length
-        ? bookmarks.map((bookmark) => ({
-          id: bookmark._id,
-          type: 'bookmarks',
-          attributes: {
-            article: {
-              id: bookmark.articleId._id,
-              title: bookmark.articleId.title
-            }
-          }
-        }))
-        : null
+      const { id } = req.params
+      const bookmarks = await Bookmark.getAggregate(id)
+      const data = bookmarks.length ? formatArray(bookmarks) : null
       const response = !data
         ? formatMessage('No data found for the bookmark')
         : { data }
