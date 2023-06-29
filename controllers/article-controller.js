@@ -21,13 +21,7 @@ const articleController = {
       const { page } = req.query
       const { limit, skip, currPage } = getPagination(page)
 
-      const articles = await Article.find({})
-        .populate(['articleCommentCount', 'articleBookmarkCount'])
-        .select('title summary record urls tagsId')
-        .limit(limit)
-        .skip(skip)
-        .sort('-createdAt')
-        .lean()
+      const articles = await Article.getAggregate().limit(limit).skip(skip)
 
       const meta = { page: currPage, limit, skip, total: articles.length }
       const data = articles.length ? formatArray(articles, 'articles') : null
@@ -45,7 +39,7 @@ const articleController = {
       const { id } = req.params
 
       const article = await Article.findById(id)
-        .populate('articleCommentCount')
+        .populate(['articleCommentCount', 'articleBookmarkCount'])
         .select('title summary record urls tagsId')
         .lean()
       if (!article) {
@@ -142,10 +136,7 @@ const articleController = {
   getArticleComments: async (req, res, next) => {
     try {
       const articleId = req.params.id
-
-      const comments = await Comment.find({ articleId })
-        .select('content')
-        .lean()
+      const comments = await Comment.getAggregate(articleId)
 
       const data = comments.length ? formatArray(comments, 'comments') : null
       const response = !data

@@ -76,4 +76,43 @@ articleSchema.virtual('articleBookmarkCount', {
   count: true
 })
 
+articleSchema.statics.getAggregate = function (id) {
+  return this.aggregate()
+    .lookup({
+      from: 'users',
+      localField: 'userId',
+      foreignField: '_id',
+      as: 'user'
+    })
+    .match({
+      'user.deletedAt': null
+    })
+    .lookup({
+      from: 'comments',
+      localField: 'articleId',
+      foreignField: '_id',
+      as: 'articleCommentCount'
+    })
+    .lookup({
+      from: 'bookmarks',
+      localField: 'articleId',
+      foreignField: '_id',
+      as: 'articleBookmarkCount'
+    })
+    .addFields({
+      articleCommentCount: { $size: '$articleCommentCount' },
+      articleBookmarkCount: { $size: '$articleBookmarkCount' }
+    })
+    .sort({ createdAt: -1 })
+    .project({
+      title: 1,
+      urls: 1,
+      summary: 1,
+      record: 1,
+      tagsId: 1,
+      articleCommentCount: 1,
+      articleBookmarkCount: 1
+    })
+}
+
 module.exports = model('Article', articleSchema)
