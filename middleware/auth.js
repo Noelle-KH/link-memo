@@ -1,6 +1,8 @@
 const createError = require('http-errors')
 const jwt = require('jsonwebtoken')
 
+const User = require('../models/user-model')
+
 const verifyToken = (req, res, next) => {
   try {
     const { authorization } = req.headers
@@ -40,19 +42,50 @@ const verifyResetToken = (req, res, next) => {
   }
 }
 
-const verifySelf = (req, res, next) => {
-  const loginId = req.id
-  const { id } = req.params
+const verifyDisableStatus = async (req, res, next) => {
+  try {
+    const currentTime = new Date()
 
-  if (loginId !== id) {
-    throw createError.Forbidden('No operation permission')
+    await User.deleteMany({ deletedAt: { $lt: currentTime } })
+
+    next()
+  } catch (error) {
+    next(error)
   }
+}
 
-  next()
+const verifyUserStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const user = await User.findOne({ _id: id, deletedAt: null })
+    if (!user) {
+      throw createError.NotFound('The user does not exist')
+    }
+
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+const verifyLoginUserStatus = async (req, res, next) => {
+  try {
+    const { id } = req
+    const user = await User.findById(id).select('deletedAt').lean()
+    if (user.deletedAt !== null) {
+      throw createError.Forbidden('No operation permission')
+    }
+
+    next()
+  } catch (error) {
+    next(error)
+  }
 }
 
 module.exports = {
   verifyToken,
   verifyResetToken,
-  verifySelf
+  verifyDisableStatus,
+  verifyUserStatus,
+  verifyLoginUserStatus
 }

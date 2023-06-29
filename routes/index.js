@@ -7,15 +7,19 @@ const {
   userFieldValidation,
   passwordFieldValidation
 } = require('../middleware/validation')
-const { verifyToken, verifyResetToken } = require('../middleware/auth')
-const { checkUserStatus } = require('../middleware/check-user')
+const {
+  verifyToken,
+  verifyResetToken,
+  verifyDisableStatus,
+  verifyLoginUserStatus
+} = require('../middleware/auth')
 
 const users = require('./modules/users-route')
 const articles = require('./modules/articles-route')
 const comments = require('./modules/comments-route')
 const tags = require('./modules/tags-route')
 
-router.use(checkUserStatus)
+router.use(verifyDisableStatus)
 
 router.post(
   '/register',
@@ -45,9 +49,9 @@ router.post(
 )
 
 router.use('/users', verifyToken, users)
-router.use('/articles', verifyToken, articles)
-router.use('/tags', verifyToken, tags)
-router.use('/comments', verifyToken, comments)
+router.use('/articles', verifyToken, verifyLoginUserStatus, articles)
+router.use('/tags', verifyToken, verifyLoginUserStatus, tags)
+router.use('/comments', verifyToken, verifyLoginUserStatus, comments)
 
 router.get('/:shortenUrl', articleController.goToOriginUrl)
 

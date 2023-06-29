@@ -6,9 +6,9 @@ const {
   passwordFieldValidation
 } = require('../../middleware/validation')
 const upload = require('../../middleware/multer')
-const { checkUserExist } = require('../../middleware/check-user')
+const { verifyUserStatus } = require('../../middleware/auth')
 
-router.use('/:id', checkUserExist)
+router.use('/:id', verifyUserStatus)
 
 router.get('/:id/bookmarks', userController.getUserBookmark)
 
@@ -24,6 +24,7 @@ router.get('/:id/articles', userController.getUserArticles)
 router.get('/:id/comments', userController.getUserComments)
 
 router.get('/:id', userController.getUser)
+
 router.put(
   '/',
   upload.single('avatar'),
