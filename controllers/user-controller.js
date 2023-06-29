@@ -64,12 +64,8 @@ const userController = {
   changeUserStatus: async (req, res, next) => {
     try {
       const { id } = req
-      const { email } = req.body
       const deadline = 30 * 24 * 60 * 60 * 1000
-      const user = await User.findOne(id ? { _id: id } : { email })
-      if (!user) {
-        throw createError.NotFound('The user does not exist')
-      }
+      const user = await User.findById(id)
 
       user.deletedAt =
         user.deletedAt === null ? new Date(Date.now() + deadline) : null

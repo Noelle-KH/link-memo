@@ -40,11 +40,6 @@ const authController = {
       if (!user) {
         throw createError.NotFound('The user does not exist')
       }
-      if (user.deletedAt !== null) {
-        throw createError.BadRequest(
-          'This user is currently deactivated. To regain access, please apply for account reactivation'
-        )
-      }
 
       const isMatch = await bcrypt.compare(password, user.password)
       if (!isMatch) {
@@ -55,6 +50,10 @@ const authController = {
         expiresIn: '1h'
       })
 
+      const meta = {
+        message:
+          'This user is currently deactivated. To regain access, please apply for account reactivation'
+      }
       const data = {
         id: user._id,
         type: 'users',
@@ -62,8 +61,10 @@ const authController = {
           token
         }
       }
+      const response =
+        user.deletedAt !== null ? Object.assign({ meta }, { data }) : { data }
 
-      res.json({ data })
+      res.json(response)
     } catch (error) {
       next(error)
     }
@@ -79,7 +80,9 @@ const authController = {
       const token = jwt.sign({ id: userExist._id }, process.env.RESET_SECRET, {
         expiresIn: '10m'
       })
-      const url = `${req.protocol}://${req.get('host')}${req.originalUrl}/${token}`
+      const url = `${req.protocol}://${req.get('host')}${
+        req.originalUrl
+      }/${token}`
 
       const info = await sendEmail(email, url)
 
