@@ -1,5 +1,7 @@
 const cors = require('cors')
 const express = require('express')
+const swaggerUi = require('swagger-ui-express')
+const swaggerDocument = require('./swagger.json')
 
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
@@ -19,6 +21,16 @@ app.use('/api', routes)
 app.get('/', (req, res) => {
   res.send('<h1>Hello</h1>')
 })
+
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    swaggerOptions: {
+      supportedSubmitMethods: []
+    }
+  })
+)
 
 app.all('*', (req, res) => {
   const errors = {

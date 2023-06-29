@@ -1,0 +1,2161 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Link Memo",
+    "description": "✨ Provides user registration and login functionality\n\n✨ Ability to update and deactivate user status\n\n✨ Records blog article URLs and generates corresponding short URLs and QR codes\n\n✨ Automatically generates AI summaries\n\n✨ Allows manual addition of notes\n\n✨ Categorizes articles using custom or default tags\n\n✨ Browses articles and content saved by other users\n\n✨ Follows other users and bookmarks articles of interest",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Routes and functionalities related to Login, Registration, and Verification"
+    },
+    {
+      "name": "users",
+      "description": "Routes and functionalities related to Users"
+    },
+    {
+      "name": "articles",
+      "description": "Routes and functionalities related to Articles"
+    },
+    {
+      "name": "comments",
+      "description": "Routes and functionalities related to Comments"
+    },
+    {
+      "name": "tags",
+      "description": "Routes and functionalities related to Tags"
+    },
+    {
+      "name": "other",
+      "description": "Functionality to redirect to the original URL"
+    }
+  ],
+  "paths": {
+    "/api/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "description": "Login functionality,  provide the user's email and password. Upon successful login, a valid token will be obtained. When user in disabled status, will get different response messages",
+        "requestBody": {
+          "description": "Enter user's email and password",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "648f1ed45f0ff2a981898454"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "users"
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "properties": {
+                            "token": {
+                              "type": "string",
+                              "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGYxZWQ0NWYwZmYyYTk4MTg5ODQ1NCIsImlhdCI6MTY4NzE4ODQ3OSwiZXhwIjoxNjg3MTkyMDc5fQ.kXbfYzld7dtSLd-Q5GMpq5g0cGlyU6d9fmJkVb7SbDU"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure for all fields (e.g., All fields are required)"
+          },
+          "404": {
+            "description": "The user does not exist"
+          }
+        }
+      }
+    },
+    "/api/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "description": "Registering a new user,provide the following information: username, email, password, and confirm password. Upon successful registration, the user's username and email will be returned",
+        "requestBody": {
+          "description": "Enter username, email, password and confirm password",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Register successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "648f1ed45f0ff2a981898454"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "users"
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "properties": {
+                            "username": {
+                              "type": "string",
+                              "example": "test"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "text@text.com"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure for all fields (e.g., All fields are required)"
+          }
+        }
+      }
+    },
+    "/api/reset-password": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "description": "Resetting password for forgotten password, enter email for verification. Upon successful verification, a password reset link will be sent to the provided email address. Additionally, a success message along with the email sending ID will be returned",
+        "requestBody": {
+          "description": "Enter user email",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "test@test.com"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset request successful, and email sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Password reset email sent successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "info": {
+                          "type": "string",
+                          "example": "<099b4460-506a-438b-7ade-7de2982e7f97@link-memo.com>"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure for all fields (e.g., All fields are required)"
+          },
+          "404": {
+            "description": "The user does not exist"
+          }
+        }
+      }
+    },
+    "/api/reset-password/:token": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "description": "User password reset, enter  new password and confirm it within the 10-minute token validity period. Once the password is confirmed, the user's password will be updated. You can then log in using the new password to access the functionalities",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "description": "Token, use to validate the token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGYxZWQ0NWYwZmYyYTk4MTg5ODQ1NCIsImlhdCI6MTY4NzE4ODQ3OSwiZXhwIjoxNjg3MTkyMDc5fQ.kXbfYzld7dtSLd-Q5GMpq5g0cGlyU6d9fmJkVb7SbDU"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Enter new password and confirm password",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "confirmPassword": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Password reset successful, please login again"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure for all fields (e.g., All fields are required)"
+          },
+          "401": {
+            "description": "Invalid token"
+          },
+          "404": {
+            "description": "The user does not exist"
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "description": "Updating user profile,  provide the necessary details, including name, email, password, and profile picture",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Enter username, email, password, confirm password and avatar",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "test"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "test@test.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "confirmPassword": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "avatar": {
+                    "type": "file",
+                    "example": "avatar.jpg"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User profile update successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "User updated successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure for all fields (e.g., All fields are required)"
+          },
+          "401": {
+            "description": "Please login or register an account"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "description": "Change status of user (active or disabled). When the user status set to disabled, the user will be unable to access the functionalities, and other users will not be able to search for the disabled user's information",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Change user status successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "User status updated successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          }
+        }
+      }
+    },
+    "/api/users/:id": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Get user profile based on id, return the username, email, avatar and the count of article, comment, followers, following, and bookmark",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user profile successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "404": {
+            "description": "The user does not exist"
+          }
+        }
+      }
+    },
+    "/api/users/:id/articles": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Get articles published by specific user, return the article title, summary, record, URL information, and the count of comments and bookmark",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user published articles successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Article"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "404": {
+            "description": "The user does not exist"
+          }
+        }
+      }
+    },
+    "/api/users/:id/comments": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Get article comments published by specific user, return the comment content",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user published article comments successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Comment"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "404": {
+            "description": "The user does not exist"
+          }
+        }
+      }
+    },
+    "/api/users/:id/bookmarks": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Get bookmark articles by specific user, return the article titles",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user bookmark article successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Bookmark"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "404": {
+            "description": "The user does not exist"
+          }
+        }
+      }
+    },
+    "/api/users/:id/followings": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Get user following by specific user, return the following user id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user following successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Following"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          }
+        }
+      }
+    },
+    "/api/users/:id/followers": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "description": "Get user followed by specific user, return the followed user id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get user followed successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Follower"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          }
+        }
+      }
+    },
+    "/api/users/:id/follows": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "description": "Following specific user, return following successful message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Following user successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "648f1ed45f0ff2a981898454"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "follows"
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "properties": {
+                            "followerId": {
+                              "type": "string",
+                              "example": "648f1ed45f0ff2a981898454"
+                            },
+                            "followingId": {
+                              "type": "string",
+                              "example": "648f1ed45f0ff2a981898454"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot follow yourself or You are already following this user"
+          },
+          "401": {
+            "description": "Please login or register an account"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "description": "Unfollowing specific user, return unfollowing successful message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "User id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unfollowing user successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Follow relationship deleted successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot follow yourself or You are not following this user"
+          },
+          "401": {
+            "description": "Please login or register an account"
+          }
+        }
+      }
+    },
+    "/api/articles": {
+      "get": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Get all articles,sorted by their creation time, with a maximum of 20 articles per page and return the article title, summary, record, URL information, and the count of comments and bookmark",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get articles successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "number",
+                          "example": 20
+                        },
+                        "skip": {
+                          "type": "number",
+                          "example": 0
+                        },
+                        "total": {
+                          "type": "number",
+                          "example": 50
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Article"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Create new article, return the article title, summary, URL information",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Enter article title and origin URL",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Why use NodeJS?"
+                  },
+                  "originUrl": {
+                    "type": "string",
+                    "example": "https://example.com"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Create new article successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Article"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          }
+        }
+      }
+    },
+    "/api/articles/:id": {
+      "get": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Get specific article, corresponding article information will be returned",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Article id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get specific article successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Article"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The article does not exist"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Update specific article and return the update success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Article id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Enter article title, summary, record, tagId",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Why use NodeJS?"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "example": "This is AI summary"
+                  },
+                  "record": {
+                    "type": "string",
+                    "example": "This is record"
+                  },
+                  "tagsId": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "648f1ed45f0ff2a981898454"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Update specific article successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Article updated successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The article does not exist"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Delete specific article and return delete success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Article id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete specific article successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Article deleted successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The article does not exist"
+          }
+        }
+      }
+    },
+    "/api/articles/:id/comment": {
+      "get": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Get specific article all comments, return the comments content",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Article id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get specific article comments successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Comment"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Create new comment for specific article, return create comment success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Article id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Enter comment content",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "example": "Article comment"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Create specific article comment successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Comment"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The comment does not exist"
+          }
+        }
+      }
+    },
+    "/api/articles/:id/bookmark": {
+      "post": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Create bookmark for specific article, return create bookmark success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Article id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create bookmark successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Bookmark updated successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "You are already bookmark this article"
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "articles"
+        ],
+        "description": "Delete bookmark for specific article, return delete bookmark success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Article id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete bookmark successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Bookmark deleted successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "You are not bookmark this article"
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          }
+        }
+      }
+    },
+    "/api/comments/:id": {
+      "get": {
+        "tags": [
+          "comments"
+        ],
+        "description": "Get specific comment, return the comment content",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Comment id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get a single comment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Comment"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The comment does not exist"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "comments"
+        ],
+        "description": "Update specific comment, return the update comment success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Comment id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Enter update the content of a comment",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "example": "Article comment"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Update comment successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Comment updated successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure for all fields (e.g., All fields are required)"
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The comment does not exist"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "comments"
+        ],
+        "description": "Delete specific comment, return the delete comment success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Comment id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete comment successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Comment deleted successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The comment does not exist"
+          }
+        }
+      }
+    },
+    "/api/tags": {
+      "get": {
+        "tags": [
+          "tags"
+        ],
+        "description": "Get all default tags and return their names",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get default tags successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Tag"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tags"
+        ],
+        "description": "Create new user specific tag and return new tag name",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Enter tag name",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "JavaScript"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Create new tag successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Tag"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          }
+        }
+      }
+    },
+    "/api/tags/:id": {
+      "get": {
+        "tags": [
+          "tags"
+        ],
+        "description": "Get specific tag, return tag name",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Tag id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get tag successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Tag"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The tag does not exist"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "tags"
+        ],
+        "description": "Update specific tag, return update tag success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "Enter update name for tag",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "JavaScript"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Tag id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Update tag successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Tag updated successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The tag does not exist"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "tags"
+        ],
+        "description": "Delete specific tag and return delete tag success message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Tag id, use to find data in database",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "648f1ed45f0ff2a981898454"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete tag successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Tag deleted successfully"
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "null",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Please login or register an account"
+          },
+          "403": {
+            "description": "No operation permission"
+          },
+          "404": {
+            "description": "The tag does not exist"
+          }
+        }
+      }
+    },
+    "/:shortenUrl": {
+      "get": {
+        "tags": [
+          "other"
+        ],
+        "description": "Connect to origin URL",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shortenUrl",
+            "description": "The shorten URL for connect origin URL",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "tsd25k"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to origin URL"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Login": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "test@test.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "123456"
+          }
+        }
+      },
+      "Register": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "test"
+          },
+          "email": {
+            "type": "string",
+            "example": "test@test.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "123456"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "example": "123456"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "648f1ed45f0ff2a981898454"
+          },
+          "type": {
+            "type": "string",
+            "example": "users"
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string",
+                "example": "John"
+              },
+              "email": {
+                "type": "string",
+                "example": "test@test.com"
+              },
+              "avatar": {
+                "type": "string",
+                "example": "https://res.cloudinary.com/dcgkzdjtr/image/upload/v1687157291/human_coding_og7byy.png"
+              },
+              "articleCount": {
+                "type": "number",
+                "example": 5
+              },
+              "commentCount": {
+                "type": "number",
+                "example": 3
+              },
+              "followerCount": {
+                "type": "number",
+                "example": 2
+              },
+              "followingCount": {
+                "type": "number",
+                "example": 4
+              },
+              "bookmarkCount": {
+                "type": "number",
+                "example": 10
+              }
+            }
+          }
+        }
+      },
+      "Article": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "648f1ed45f0ff2a981898454"
+          },
+          "type": {
+            "type": "string",
+            "example": "articles"
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "example": "Why use NodeJS?"
+              },
+              "urls": {
+                "$ref": "#/components/schemas/Urls"
+              },
+              "summary": {
+                "type": "string",
+                "example": "This is AI summary"
+              },
+              "record": {
+                "type": "string",
+                "example": "This is record"
+              },
+              "tagsId": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "example": "648f1ed45f0ff2a981898454"
+                }
+              },
+              "articleCommentCount": {
+                "type": "number",
+                "example": 3
+              },
+              "articleBookmarkCount": {
+                "type": "number",
+                "example": 3
+              }
+            }
+          }
+        }
+      },
+      "Urls": {
+        "type": "object",
+        "properties": {
+          "originUrl": {
+            "type": "string",
+            "example": "https://example.com"
+          },
+          "shortenUrl": {
+            "type": "string",
+            "example": "tsd25k"
+          },
+          "qrCode": {
+            "type": "string",
+            "example": "http://example.jpg"
+          }
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "648f1ed45f0ff2a981898454"
+          },
+          "type": {
+            "type": "string",
+            "example": "tags"
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "JavaScript"
+              }
+            }
+          }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "648f1ed45f0ff2a981898454"
+          },
+          "type": {
+            "type": "string",
+            "example": "comments"
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string",
+                "example": "Article comment"
+              }
+            }
+          }
+        }
+      },
+      "Bookmark": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "648f1ed45f0ff2a981898454"
+          },
+          "type": {
+            "type": "string",
+            "example": "bookmarks"
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "article": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "648f1ed45f0ff2a981898454"
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "Why use NodeJS?"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Following": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "648f1ed45f0ff2a981898454"
+          },
+          "type": {
+            "type": "string",
+            "example": "follows"
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "followingId": {
+                "type": "string",
+                "example": "648f1ed45f0ff2a981898454"
+              }
+            }
+          }
+        }
+      },
+      "Follower": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "648f1ed45f0ff2a981898454"
+          },
+          "type": {
+            "type": "string",
+            "example": "follows"
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "followerId": {
+                "type": "string",
+                "example": "648f1ed45f0ff2a981898454"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

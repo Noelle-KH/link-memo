@@ -90,3 +90,5 @@ temp/
 
 # DynamoDB Local files
 note/
+
+req.http
