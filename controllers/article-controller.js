@@ -20,8 +20,11 @@ const articleController = {
     try {
       const { page } = req.query
       const { limit, skip, currPage } = getPagination(page)
+      const sortedBy = req.query.sort || 'createdAt'
 
-      const articles = await Article.getAggregate().limit(limit).skip(skip)
+      const articles = await Article.getAggregate(sortedBy)
+        .limit(limit)
+        .skip(skip)
 
       const meta = { page: currPage, limit, skip, total: articles.length }
       const data = articles.length ? formatArray(articles, 'articles') : null

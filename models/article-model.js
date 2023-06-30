@@ -76,7 +76,7 @@ articleSchema.virtual('articleBookmarkCount', {
   count: true
 })
 
-articleSchema.statics.getAggregate = function (id) {
+articleSchema.statics.getAggregate = function (sortedBy) {
   return this.aggregate()
     .lookup({
       from: 'users',
@@ -103,7 +103,7 @@ articleSchema.statics.getAggregate = function (id) {
       articleCommentCount: { $size: '$articleCommentCount' },
       articleBookmarkCount: { $size: '$articleBookmarkCount' }
     })
-    .sort({ createdAt: -1 })
+    .sort({ [sortedBy]: -1 })
     .project({
       title: 1,
       urls: 1,

@@ -850,6 +850,26 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "description": "Retrieve Data for the Specified Page Number",
+            "schema": {
+              "type": "number",
+              "example": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by Keyword Frequency (Descending)",
+            "schema": {
+              "type": "string",
+              "example": "createdAt"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Get articles successful",
