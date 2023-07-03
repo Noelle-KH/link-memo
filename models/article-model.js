@@ -88,20 +88,22 @@ articleSchema.statics.getAggregate = function (sortedBy) {
       'user.deletedAt': null
     })
     .lookup({
-      from: 'comments',
-      localField: 'articleId',
+      from: 'tags',
+      localField: 'tagsId',
       foreignField: '_id',
+      as: 'tags'
+    })
+    .lookup({
+      from: 'comments',
+      localField: '_id',
+      foreignField: 'articleId',
       as: 'articleCommentCount'
     })
     .lookup({
       from: 'bookmarks',
-      localField: 'articleId',
-      foreignField: '_id',
+      localField: '_id',
+      foreignField: 'articleId',
       as: 'articleBookmarkCount'
-    })
-    .addFields({
-      articleCommentCount: { $size: '$articleCommentCount' },
-      articleBookmarkCount: { $size: '$articleBookmarkCount' }
     })
     .sort({ [sortedBy]: -1 })
     .project({
@@ -109,9 +111,9 @@ articleSchema.statics.getAggregate = function (sortedBy) {
       urls: 1,
       summary: 1,
       record: 1,
-      tagsId: 1,
-      articleCommentCount: 1,
-      articleBookmarkCount: 1
+      tags: '$tags.name',
+      articleCommentCount: { $size: '$articleCommentCount' },
+      articleBookmarkCount: { $size: '$articleBookmarkCount' }
     })
 }
 
