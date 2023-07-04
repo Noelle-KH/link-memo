@@ -19,6 +19,8 @@ This API provides functionalities for recording and summarizing blog articles, g
 
 ## API documents
 
+✨ [API documents](https://link-memo-production.up.railway.app/api-docs/) with Swagger
+
 ***
 
 ## Installation
